@@ -1,27 +1,53 @@
-import { Link, useParams } from 'react-router-dom';
-import { Row, Col, ListGroup, Image, Card, Button} from 'react-bootstrap';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Row, Col, ListGroup, Image, Card, Button, Form} from 'react-bootstrap';
 import { FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa'; // Import icons from react-icons
+import { useGetEventDetailsQuery } from '../slices/eventsApiSlice';
 import Rating from '../components/Rating';
-import { useEffect, useState } from 'react';
-import axios from "axios"
+import Loader from '../components/Loader';
+import Message from '../components/Message';
+import { useState } from 'react';
+import { addToCart } from '../slices/cartSlice';
+import { useDispatch } from 'react-redux';
+// import { useEffect, useState } from 'react';
+// import axios from "axios"
 
 const EventScreen = () => {
-    const [event, setEvent] = useState({});
 
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { id: eventId } = useParams();
 
-    useEffect(() => {
-        const fetchEvent = async () =>{
-            const { data } = await axios.get(`/api/events/${eventId}`);
-            setEvent(data);
-        }
+    const [quantity, setQuantity] = useState(1);
 
-        fetchEvent();
-    }, [eventId])
+    const {data: event, isLoading, error} = useGetEventDetailsQuery(eventId);
+
+
+    const addToCartHandler = () => {
+        dispatch(addToCart({ ...event, quantity}));
+        navigate('/cart');
+    }
+
+  
+
+
+
+    // const [event, setEvent] = useState({});
+
+    // useEffect(() => {
+    //     const fetchEvent = async () =>{
+    //         const { data } = await axios.get(`/api/events/${eventId}`);
+    //         setEvent(data);
+    //     }
+
+    //     fetchEvent();
+    // }, [eventId])
 
 
     return (
         <>
+        {isLoading? (<Loader />) : error ? (<Message variant="danger">{error?.data?.message || error.error}</Message>) : (
+            <>
+          <>
             <Link className='btn btn-light my-3' to='/'>
                 Go Back
             </Link>
@@ -96,11 +122,30 @@ const EventScreen = () => {
                                     </Col>
                                 </Row>
                             </ListGroup.Item>
+                            {event.countInStock > 0 && (
+                                <ListGroup.Item>
+                                    <Row>
+                                        <Col>
+                                            Quantity:
+                                        </Col>
+                                        <Col>
+                                            <Form.Control as="select" value={quantity} onChange={(e) => setQuantity(Number(e.target.value)) }>
+                                                {[...Array(event.countInStock).keys()].map((x) => (
+                                                    <option key={x + 1} value={ x + 1}>
+                                                        { x + 1}
+                                                    </option>
+                                                ))}
+                                            </Form.Control>
+                                        </Col>
+                                    </Row>
+                                </ListGroup.Item>
+                            )}
                             <ListGroup.Item>
                                 <Button
                                     className="btn-block"
                                     type="button"
                                     disabled={event.countInStock === 0}
+                                    onClick={addToCartHandler}
                                 >
                                     Add To Cart
                                 </Button>
@@ -109,7 +154,12 @@ const EventScreen = () => {
                     </Card>
                 </Col>
             </Row>
-        </>
+        </></>)}
+       
+    
+    </>
+
+       
     );
 };
 
