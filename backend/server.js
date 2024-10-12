@@ -1,20 +1,23 @@
 import express from 'express';
-import events from './data/events.js';
+
 import dotenv from 'dotenv';
 dotenv.config();
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import connectDB from './config/db.js';
+import eventRoutes from './routes/eventRoutes.js'
 
 const port = process.env.PORT || 5000;
 
+connectDB(); // Connect to MongoDB
 const app = express();
 
-
-app.get('/api/events', (req, res) => {
-    res.json(events);
+app.get('/', (req, res) => {
+    res.send("API is running");
 });
 
-app.get('/api/events/:id', (req, res) => {
-    const event = events.find((event) => event._id == req.params.id);
-    res.json(event);
-})
+app.use('/api/events', eventRoutes);
+
+app.use(notFound);
+app.use(errorHandler)
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
