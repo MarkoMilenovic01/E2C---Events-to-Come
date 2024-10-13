@@ -15,6 +15,7 @@ const EventScreen = () => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    
     const { id: eventId } = useParams();
 
     const [quantity, setQuantity] = useState(1);
