@@ -24,7 +24,7 @@ const Event = ({ event }) => {
         <Card.Text as="div">
             <Rating value={event.rating} text={`${event.numberOfReviews} reviews`} />
         </Card.Text>
-        <Card.Text as="h3" className="my-1">${event.price}</Card.Text>
+        <Card.Text as="h3" className="my-1">€{event.price}</Card.Text>
 
         <Card.Text as="p" className="description">
           {event.description}

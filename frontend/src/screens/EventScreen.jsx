@@ -70,7 +70,7 @@ const EventScreen = () => {
                             <Rating value={event.rating} text={`${event.numberOfReviews} reviews`} />
                         </ListGroup.Item>
                         <ListGroup.Item>
-                            <strong>Price:</strong> ${event.price}
+                            <strong>Price:</strong> €{event.price}
                         </ListGroup.Item>
                         <ListGroup.Item>
                             <strong>Description:</strong> {event.description}
@@ -111,7 +111,7 @@ const EventScreen = () => {
                                 <Row>
                                     <Col>Price:</Col>
                                     <Col>
-                                        <strong>${event.price}</strong>
+                                        <strong>€{event.price}</strong>
                                     </Col>
                                 </Row>
                             </ListGroup.Item>

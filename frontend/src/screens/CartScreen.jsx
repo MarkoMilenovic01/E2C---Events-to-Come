@@ -74,7 +74,7 @@ const CartScreen = () => {
                         <h2>
                             Subtotal: ({cartItems.reduce((acc, item) => acc + item.quantity, 0 )}) items
                         </h2>
-                        ${cartItems.reduce((acc, item) => acc + item.price*item.quantity, 0).toFixed(2)}
+                        €{cartItems.reduce((acc, item) => acc + item.price*item.quantity, 0).toFixed(2)}
                     </ListGroup.Item>
                     <ListGroup.Item>
                         <Button type="button" className="btn-block" disabled={cartItems.length === 0} onClick={checkoutHandler}>Proceed to Checkout</Button>
