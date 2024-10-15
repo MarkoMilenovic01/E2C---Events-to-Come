@@ -12,6 +12,7 @@ import store from './store.js';
 import './assets/styles/bootstrap.custom.css'
 import  './assets/styles/index.css'
 import App from './App';
+import { HelmetProvider } from 'react-helmet-async';
 import reportWebVitals from './reportWebVitals';
 import HomeScreen from './screens/HomeScreen';
 import EventScreen from './screens/EventScreen';
@@ -24,12 +25,21 @@ import PaymentScreen from './screens/PaymentScreen.jsx';
 import PlaceOrderScreen from './screens/PlaceOrderScreen.jsx';
 import OrderScreen from './screens/OrderScreen.jsx';
 import {PayPalScriptProvider} from '@paypal/react-paypal-js';  
-
-
+import ProfileScreen from './screens/ProfileScreen.jsx';
+import AdminRoute from './components/AdminRoute.jsx';
+import OrderListScreen from './screens/admin/OrderListScreen.jsx';
+import EventListScreen from './screens/admin/EventListScreen.jsx';
+import EventEditScreen from './screens/admin/EventEditScreen.jsx';
+import UsersListScreen from './screens/admin/UsersListScreen.jsx';
+import UserEditScreen from './screens/admin/UserEditScreen.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index={true} path="/" element={<HomeScreen />} />
+      <Route path="/page/:pageNumber" element={<HomeScreen />} />
+      <Route path="/search/:keyword" element={<HomeScreen />} />
+      <Route path="/search/:keyword/page/:pageNumber" element={<HomeScreen />} />
+
       <Route path="/event/:id" element={<EventScreen />} />
       <Route path="/cart" element={<CartScreen />} />
       <Route path="/login" element={<LoginScreen />} />
@@ -40,6 +50,19 @@ const router = createBrowserRouter(
         <Route path="/payment" element={<PaymentScreen />} />
         <Route path="/placeorder" element={<PlaceOrderScreen />} />
         <Route path="/order/:id" element={<OrderScreen />} />
+        <Route path="/profile" element={<ProfileScreen />} />
+      </Route>
+      
+      <Route path='' element={<AdminRoute />}>
+        <Route path="/admin/orderlist" element={<OrderListScreen />} />
+        <Route path="/admin/eventlist" element={<EventListScreen />} />
+        <Route
+          path='/admin/eventlist/:pageNumber'
+          element={<EventListScreen />}
+        />
+        <Route path="/admin/event/:id/edit" element={<EventEditScreen />} />
+        <Route path="/admin/userlist" element={<UsersListScreen />} />
+        <Route path="/admin/user/:id/edit" element={<UserEditScreen />} />
       </Route>
     </Route>
   )
@@ -49,11 +72,13 @@ const router = createBrowserRouter(
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-    <PayPalScriptProvider deferLoading={true}>
-        <RouterProvider router={router} />
-      </PayPalScriptProvider>
-    </Provider>
+     <HelmetProvider>
+      <Provider store={store}>
+      <PayPalScriptProvider deferLoading={true}>
+          <RouterProvider router={router} />
+        </PayPalScriptProvider>
+      </Provider>
+    </HelmetProvider>
   </React.StrictMode>
 );
 

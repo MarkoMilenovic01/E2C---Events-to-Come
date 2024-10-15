@@ -1,15 +1,16 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Row, Col, ListGroup, Image, Card, Button, Form} from 'react-bootstrap';
-import { FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa'; // Import icons from react-icons
-import { useGetEventDetailsQuery } from '../slices/eventsApiSlice';
+import { FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa'; 
+import { useGetEventDetailsQuery, useCreateReviewMutation } from '../slices/eventsApiSlice';
 import Rating from '../components/Rating';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
 import { useState } from 'react';
 import { addToCart } from '../slices/cartSlice';
-import { useDispatch } from 'react-redux';
-// import { useEffect, useState } from 'react';
-// import axios from "axios"
+import { useDispatch, useSelector } from 'react-redux';
+import {toast } from 'react-toastify'
+import Meta from '../components/Meta';
+
 
 const EventScreen = () => {
 
@@ -20,8 +21,14 @@ const EventScreen = () => {
 
     const [quantity, setQuantity] = useState(1);
 
-    const {data: event, isLoading, error} = useGetEventDetailsQuery(eventId);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
 
+    const {data: event, isLoading, refetch,  error} = useGetEventDetailsQuery(eventId);
+
+    const { userInfo } = useSelector((state) => state.auth);
+
+    const [createReview, {isLoading: loadingEventReviews}] = useCreateReviewMutation();
 
     const addToCartHandler = () => {
         dispatch(addToCart({ ...event, quantity}));
@@ -29,6 +36,21 @@ const EventScreen = () => {
     }
 
   
+    const submitHandler = async (e) => {
+        e.preventDefault();
+    
+        try {
+          await createReview({
+            eventId,
+            rating,
+            comment,
+          }).unwrap();
+          refetch();
+          toast.success('Review created successfully');
+        } catch (err) {
+          toast.error(err?.data?.message || err.error);
+        }
+      };
 
 
 
@@ -46,13 +68,12 @@ const EventScreen = () => {
 
     return (
         <>
-        {isLoading? (<Loader />) : error ? (<Message variant="danger">{error?.data?.message || error.error}</Message>) : (
-            <>
-          <>
-            <Link className='btn btn-light my-3' to='/'>
+         <Link className='btn btn-light my-3' to='/'>
                 Go Back
             </Link>
-
+        {isLoading? (<Loader />) : error ? (<Message variant="danger">{error?.data?.message || error.error}</Message>) : (
+            <>
+            <Meta title={event.name} />
             <Row className="mb-4">
                 <Col md={5}>
                     <Image
@@ -155,7 +176,71 @@ const EventScreen = () => {
                     </Card>
                 </Col>
             </Row>
-        </></>)}
+            <Row className='review'>
+            <Col md={6}>
+              <h2>Reviews</h2>
+              {event.reviews.length === 0 && <Message>No Reviews</Message>}
+              <ListGroup variant='flush'>
+                {event.reviews.map((review) => (
+                  <ListGroup.Item key={review._id}>
+                    <strong>{review.name}</strong>
+                    <Rating value={review.rating} />
+                    <p>{review.createdAt.substring(0, 10)}</p>
+                    <p>{review.comment}</p>
+                  </ListGroup.Item>
+                ))}
+                <ListGroup.Item>
+                  <h2>Write a Customer Review</h2>
+
+                  {loadingEventReviews && <Loader />}
+
+                  {userInfo ? (
+                    <Form onSubmit={submitHandler}>
+                      <Form.Group className='my-2' controlId='rating'>
+                        <Form.Label>Rating</Form.Label>
+                        <Form.Control
+                          as='select'
+                          required
+                          value={rating}
+                          onChange={(e) => setRating(e.target.value)}
+                        >
+                          <option value=''>Select...</option>
+                          <option value='1'>1 - Poor</option>
+                          <option value='2'>2 - Fair</option>
+                          <option value='3'>3 - Good</option>
+                          <option value='4'>4 - Very Good</option>
+                          <option value='5'>5 - Excellent</option>
+                        </Form.Control>
+                      </Form.Group>
+                      <Form.Group className='my-2' controlId='comment'>
+                        <Form.Label>Comment</Form.Label>
+                        <Form.Control
+                          as='textarea'
+                          row='3'
+                          required
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                        ></Form.Control>
+                      </Form.Group>
+                      <Button
+                        disabled={loadingEventReviews}
+                        type='submit'
+                        variant='primary'
+                      >
+                        Submit
+                      </Button>
+                    </Form>
+                  ) : (
+                    <Message>
+                      Please <Link to='/login'>sign in</Link> to write a review
+                    </Message>
+                  )}
+                </ListGroup.Item>
+              </ListGroup>
+            </Col>
+          </Row>
+        </>
+    )}
        
     
     </>
